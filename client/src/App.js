@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import Header from "./components/Header";
 import { DndProvider } from "react-dnd";
@@ -8,18 +8,31 @@ import DndItem from "./components/DndItem";
 import DndGroup from "./components/DndGroup";
 import DragNDrop from "./components/DragNDrop";
 import { data, statuses } from "./data";
+import {
+  getTasks,
+  addTask,
+  deleteTask,
+  editTask,
+} from "./services/taskService";
 import ModalWindow from "./components/ModalWindow";
 
 function App() {
   const [items, setItems] = useState(data);
   const [show, setShow] = useState(false);
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const dataDb = await getTasks();
+      setItems(dataDb);
+    };
+    fetchTasks();
+  }, []);
 
   const onDrop = (item, monitor, status) => {
     const mapping = statuses.find((si) => si.status === status);
 
     setItems((prevState) => {
       const newItems = prevState
-        .filter((i) => i.id !== item.id)
+        .filter((i) => i._id !== item._id)
         .concat({ ...item, status, icon: mapping.icon });
       return [...newItems];
     });
@@ -35,7 +48,7 @@ function App() {
   const onSave = (item) => {
     setItems((prevState) => {
       const newItems = prevState.map((note) =>
-        note.id === item.id ? item : note
+        note._id === item._id ? item : note
       );
       return [...newItems];
     });
@@ -57,7 +70,7 @@ function App() {
   };
   const onClose = () => setShow(false);
   const onDelete = (id) => {
-    const newItems = items.filter((note) => note.id !== id);
+    const newItems = items.filter((note) => note._id !== id);
     setItems(newItems);
   };
 
@@ -85,7 +98,7 @@ function App() {
                     .filter((i) => i.status === s.status)
                     .map((i, idx) => (
                       <DndItem
-                        key={i.id}
+                        key={i._id}
                         item={i}
                         index={idx}
                         moveItem={moveItem}

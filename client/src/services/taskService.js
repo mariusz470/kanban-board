@@ -13,7 +13,13 @@ const config = {
 };
 
 export async function getTasks() {
-  return await axios.get(apiEndpoint);
+  try {
+    const res = await axios.get(apiEndpoint);
+    const data = res.data.data;
+    return data;
+  } catch (error) {
+    return error.response.data.error;
+  }
 }
 
 export async function addTask(task) {
