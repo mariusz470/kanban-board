@@ -18,8 +18,8 @@ const ModalWindow = ({ show, onClose, onSave, onDelete, item }) => {
     onClose();
   };
 
-  const handleDelete = (id) => {
-    onDelete(id);
+  const handleDelete = (_id) => {
+    onDelete(_id);
     onClose();
   };
 
@@ -71,7 +71,7 @@ const ModalWindow = ({ show, onClose, onSave, onDelete, item }) => {
           <button
             className="btn-delete"
             type="button"
-            onClick={() => handleDelete(item.id)}
+            onClick={() => handleDelete(item._id)}
           >
             Delete
           </button>

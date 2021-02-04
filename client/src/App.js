@@ -7,7 +7,7 @@ import uuid from "react-uuid";
 import DndItem from "./components/DndItem";
 import DndGroup from "./components/DndGroup";
 import DragNDrop from "./components/DragNDrop";
-import { data, statuses } from "./data";
+import { statuses } from "./data";
 import {
   getTasks,
   addTask,
@@ -17,7 +17,7 @@ import {
 import ModalWindow from "./components/ModalWindow";
 
 function App() {
-  const [items, setItems] = useState(data);
+  const [items, setItems] = useState([]);
   const [show, setShow] = useState(false);
   useEffect(() => {
     const fetchTasks = async () => {
@@ -27,13 +27,20 @@ function App() {
     fetchTasks();
   }, []);
 
-  const onDrop = (item, monitor, status) => {
+  const onDrop = async (item, monitor, status) => {
     const mapping = statuses.find((si) => si.status === status);
+    const changedItem = {
+      ...item,
+      status,
+      icon: mapping.icon,
+    };
+    //working but making it smooth would be the next step
+    const newItem = await editTask(changedItem);
 
     setItems((prevState) => {
       const newItems = prevState
         .filter((i) => i._id !== item._id)
-        .concat({ ...item, status, icon: mapping.icon });
+        .concat(newItem);
       return [...newItems];
     });
   };
@@ -45,19 +52,21 @@ function App() {
       return [...newItems];
     });
   };
-  const onSave = (item) => {
+  const onSave = async (item) => {
+    const newItem = await editTask(item);
     setItems((prevState) => {
       const newItems = prevState.map((note) =>
-        note._id === item._id ? item : note
+        note._id === item._id ? newItem : note
       );
       return [...newItems];
     });
   };
-  const onSaveNewItem = (item) => {
-    const newItems = [...items, item];
+  const onSaveNewItem = async (item) => {
+    const newItem = await addTask(item);
+    const newItems = [...items, newItem];
     setItems(newItems);
   };
-  const item = {
+  const defaultItem = {
     id: uuid(),
     icon: "⭕️",
     status: "open",
@@ -69,7 +78,8 @@ function App() {
     setShow(true);
   };
   const onClose = () => setShow(false);
-  const onDelete = (id) => {
+  const onDelete = async (id) => {
+    await deleteTask(id);
     const newItems = items.filter((note) => note._id !== id);
     setItems(newItems);
   };
@@ -81,7 +91,7 @@ function App() {
         Add new task
       </button>
       <ModalWindow
-        item={item}
+        item={defaultItem}
         onClose={onClose}
         onSave={onSaveNewItem}
         onDelete={onDelete}
